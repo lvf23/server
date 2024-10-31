@@ -1,0 +1,3 @@
+[submodule "submodules/hooks"]
+	path = submodules/hooks
+	url = https://github.com/lvf23/hooks.git
