@@ -1,13 +1,14 @@
 const path = require("node:path");
 
-const { runJobs } = require("@root/submodules/hooks/jobs");
+const { runJobsAsync } = require("@root/submodules/hooks/jobs");
+const { runMods } = require("@root/submodules/hooks/mods");
 
 const { toJSON } = require("@root/utils/json");
 
 let routePrefix = "";
 
 const startServer = async (port) => {
-  await runJobs("start_server", port);
+  await runJobsAsync("start_server", port);
 };
 
 const createRoute = async (method, route, handler) => {
@@ -15,7 +16,7 @@ const createRoute = async (method, route, handler) => {
     toJSON,
   };
 
-  await runJobs(
+  await runJobsAsync(
     "create_route",
     method,
     path.posix.join(routePrefix, route),
@@ -25,7 +26,7 @@ const createRoute = async (method, route, handler) => {
 };
 
 const setRoutePrefix = (prefix) => {
-  routePrefix = prefix;
+  routePrefix = runMods("set_route_prefix", prefix);
 };
 
 module.exports = {

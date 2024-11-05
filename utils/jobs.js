@@ -1,7 +1,7 @@
 const { runMods } = require("@root/submodules/hooks/mods");
 
-const loadJobs = async () => {
-  const serverDriverJobsPath = await runMods(
+const loadJobs = () => {
+  const serverDriverJobsPath = runMods(
     "server_driver_jobs_path",
     "@root/jobs/drivers/server/express"
   );

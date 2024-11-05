@@ -11,28 +11,28 @@ const { loadJobs } = require("@root/utils/jobs");
 const { loadMods } = require("@root/utils/mods");
 
 const main = async () => {
-  await loadPlugins(fetchPlugins("server"), (plugin) => {
+  loadPlugins(fetchPlugins("server"), (plugin) => {
     require(plugin.file);
   });
 
-  await loadJobs();
+  loadJobs();
   loadMods();
 
   const port = await getEnv("PORT", 3000);
 
   setRoutePrefix("/api/v1");
 
-  await createRoute("GET", "/teste", ({ toJSON }) => {
-    return toJSON({
+  await createRoute("GET", "/teste", () => {
+    return {
       foo: "bar",
-    });
+    };
   });
 
   await startServer(port);
 
   const defaultServerStartMessage = `Server listening on port: ${port}`;
 
-  const serverStartMessage = await runMods(
+  const serverStartMessage = runMods(
     "start_server_message",
     defaultServerStartMessage,
     port
