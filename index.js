@@ -3,12 +3,13 @@ require("module-alias/register");
 const { loadPlugins } = require("@root/submodules/hooks/plugins");
 const { runMods } = require("@root/submodules/hooks/mods");
 
-const { getEnv } = require("@root/utils/env");
 const { fetchPlugins } = require("./utils/plugins");
 const { startServer, createRoute, setRoutePrefix } = require("./utils/server");
 
 const { loadJobs } = require("@root/utils/jobs");
 const { loadMods } = require("@root/utils/mods");
+
+const { PORT, ROUTE_PREFIX } = require("@root/utils/constants");
 
 const main = async () => {
   loadPlugins(fetchPlugins("server"), (plugin) => {
@@ -18,9 +19,7 @@ const main = async () => {
   loadJobs();
   loadMods();
 
-  const port = await getEnv("PORT", 3000);
-
-  setRoutePrefix("/api/v1");
+  setRoutePrefix(ROUTE_PREFIX);
 
   await createRoute("GET", "/teste", () => {
     return {
@@ -28,14 +27,14 @@ const main = async () => {
     };
   });
 
-  await startServer(port);
+  await startServer(PORT);
 
-  const defaultServerStartMessage = `Server listening on port: ${port}`;
+  const defaultServerStartMessage = `Server listening on port: ${PORT}`;
 
   const serverStartMessage = runMods(
     "start_server_message",
     defaultServerStartMessage,
-    port
+    PORT
   );
 
   console.log(serverStartMessage);
