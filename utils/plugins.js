@@ -1,53 +1,61 @@
-const { resolve } = require("node:path");
-const { readdirSync, statSync, existsSync } = require("node:fs");
+const path = require("node:path");
 
-const fetchPlugins = (side) => {
-  const pluginFolderPath = resolve(__dirname, "../plugins");
-  const pluginFolderEntries = readdirSync(pluginFolderPath);
+const {
+  isFolder,
+  folderExists,
+  fileExists,
+  readFolder,
+} = require("@root/utils/fs");
+
+const { isSet } = require("@root/utils/vars");
+
+const fetchAutoloadPlugins = (side) => {
+  const pluginFolderPath = path.resolve(__dirname, "../autoload-plugins");
+  const pluginFolderEntries = readFolder(pluginFolderPath);
 
   const plugins = [];
 
   pluginFolderEntries.map((entry) => {
-    const pluginFolderEntry = resolve(pluginFolderPath, entry);
+    const pluginFolderEntry = path.join(pluginFolderPath, entry);
 
-    if (statSync(pluginFolderEntry).isDirectory()) {
-      const packageJsonPath = resolve(pluginFolderEntry, "package.json");
-      const pluginFilePath = resolve(pluginFolderEntry, "server.js");
-      const pluginFolderPath = resolve(pluginFolderEntry, "server/index.js");
+    const pluginJsonPath = path.join(pluginFolderEntry, "plugin.json");
 
-      if (existsSync(packageJsonPath) && statSync(packageJsonPath).isFile()) {
-        const packageJson = require(packageJsonPath);
+    if (isFolder(pluginFolderEntry) && fileExists(pluginJsonPath)) {
+      const pluginJson = require(pluginJsonPath);
+      const defaultPluginServerFile = path.join(pluginFolderEntry, "server.js");
+      const defaultPluginServerFolderFile = path.join(
+        pluginFolderEntry,
+        "server/index.js"
+      );
 
-        const { name, version, description } = packageJson;
+      const plugin = {};
 
-        let file;
-
-        if (side == "server") {
-          if (existsSync(pluginFilePath) && statSync(pluginFilePath).isFile()) {
-            file = pluginFilePath;
-          } else if (
-            existsSync(pluginFolderPath) &&
-            statSync(pluginFolderPath).isFile()
-          ) {
-            file = pluginFolderPath;
-          }
-        } else if (side == "client") {
-          //TODO: do the URL load of client file for frontend
-        }
-
-        plugins.push({
-          name,
-          version,
-          description,
-          file,
-        });
+      if (pluginJson.name) {
+        plugin.name = pluginJson.name;
       }
+
+      if (isSet(pluginJson.active)) {
+        plugin.active = pluginJson.active;
+      } else {
+        plugin.active = true;
+      }
+
+      if (side == "server") {
+        if (pluginJson.server) {
+          plugin.server = pluginJson.server;
+        } else if (fileExists(defaultPluginServerFile)) {
+          plugin.server = defaultPluginServerFile;
+        } else if (fileExists(defaultPluginServerFolderFile)) {
+          plugin.server = defaultPluginServerFolderFile;
+        }
+      }
+
+      plugins.push(plugin);
     }
   });
-
   return plugins;
 };
 
 module.exports = {
-  fetchPlugins,
+  fetchAutoloadPlugins,
 };

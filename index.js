@@ -1,9 +1,13 @@
 require("module-alias/register");
 
+const { loadConstants } = require("@root/utils/constants");
+
 const { loadPlugins } = require("@root/submodules/hooks/plugins");
 const { runMods } = require("@root/submodules/hooks/mods");
 
-const { fetchPlugins } = require("@root/utils/plugins");
+const { fileExists } = require("@root/utils/fs");
+
+const { fetchAutoloadPlugins } = require("@root/utils/plugins");
 const {
   startServer,
   createRoute,
@@ -13,15 +17,17 @@ const {
 const { loadJobs } = require("@root/utils/jobs");
 const { loadMods } = require("@root/utils/mods");
 
-const { PORT, ROUTE_PREFIX } = require("@root/utils/constants");
-
 const main = async () => {
-  loadPlugins(fetchPlugins("server"), (plugin) => {
-    require(plugin.file);
+  loadPlugins(fetchAutoloadPlugins("server"), (plugin) => {
+    if (fileExists(plugin.server) && plugin.active === true) {
+      require(plugin.server);
+    }
   });
 
   loadJobs();
   loadMods();
+
+  const { PORT, ROUTE_PREFIX } = loadConstants();
 
   setRoutePrefix(ROUTE_PREFIX);
 
