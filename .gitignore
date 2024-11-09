@@ -3,5 +3,7 @@ node_modules
 plugins/**/*
 !plugins/.gitkeep
 
-.env
+autoload-plugins/**/*
+!autoload-plugins/.gitkeep
 
+.env
